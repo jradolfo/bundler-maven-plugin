@@ -1,10 +1,11 @@
-
 # bundler-maven-plugin
 
-[![Build Status](https://travis-ci.org/kospiotr/bundler-maven-plugin.svg?branch=master)](https://travis-ci.org/kospiotr/bundler-maven-plugin)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.kospiotr/bundler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.kospiotr/bundler-maven-plugin)
+[![Build Status](https://travis-ci.org/CH3CHO/bundler-maven-plugin.svg?branch=develop)](https://travis-ci.org/CH3CHO/bundler-maven-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.ch3cho/bundler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.ch3cho/bundler-maven-plugin)
 
 Maven plugin for creating bundle package of js and css files in Maven project.
+
+This is a fork of https://github.com/kospiotr/bundler-maven-plugin.
 
 Inspired by: https://github.com/dciccale/grunt-processhtml
 
