@@ -13,6 +13,9 @@ public class ResourceOptimizer {
 
     public String optimizeJs(String content, boolean munge, boolean verbose, boolean preserveAllSemiColons, boolean disableOptimizations) {
         try {
+            if (content.isEmpty()) {
+                return content;
+            }
             StringWriter out = new StringWriter();
             ToolErrorReporter toolErrorReporter = new ToolErrorReporter(true);
             JavaScriptCompressor compressor = new JavaScriptCompressor(new StringReader(content), toolErrorReporter);
@@ -25,6 +28,9 @@ public class ResourceOptimizer {
 
     public String optimizeCss(String content) {
         try {
+            if (content.isEmpty()) {
+                return content;
+            }
             StringWriter out = new StringWriter();
             CssCompressor compressor = new CssCompressor(new StringReader(content));
             compressor.compress(out, -1);

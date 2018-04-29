@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.File;
 import java.util.Collection;
 
 import static java.util.Arrays.asList;
@@ -64,7 +65,7 @@ public class ResourcePathExtractorTest {
         this.sourceBasePath = sourceBasePath;
         this.sourceCssPath = sourceCssPath;
         this.resourcePath = resourcePath;
-        this.absoluteResourcePath = absoluteResourcePath;
+        this.absoluteResourcePath = absoluteResourcePath.replace('/', File.separatorChar);
     }
 
     private PathNormalizator pathNormalizator = new PathNormalizator();

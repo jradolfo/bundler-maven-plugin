@@ -1,5 +1,6 @@
 package com.github.kospiotr.bundler;
 
+import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
@@ -19,7 +20,8 @@ public class PathNormalizator {
      */
     public String relativize(Path absoluteResourcePath, Path absoluteTargetCssPath) {
         Path absoluteTargetCssParentPath = absoluteTargetCssPath.getParent();
-        return absoluteTargetCssParentPath.relativize(absoluteResourcePath).toString();
+        String relativePath = absoluteTargetCssParentPath.relativize(absoluteResourcePath).toString();
+        return relativePath.replace(File.separatorChar, '/');
     }
 
     public Path getAbsoluteResourcePath(String sourceBasePath, String sourceCssPath, String resourcePath){

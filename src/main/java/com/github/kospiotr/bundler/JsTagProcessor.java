@@ -32,9 +32,6 @@ public class JsTagProcessor extends RegexBasedTagProcessor {
 
     @Override
     protected String postProcessOutputFileContent(String content) {
-        if (content.isEmpty()) {
-            return content;
-        }
         return resourceOptimizer.optimizeJs(content,
                 getMojo().isMunge(),
                 getMojo().isVerbose(),
