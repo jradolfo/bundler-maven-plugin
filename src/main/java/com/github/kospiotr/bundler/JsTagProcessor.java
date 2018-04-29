@@ -17,7 +17,7 @@ package com.github.kospiotr.bundler;
  */
 public class JsTagProcessor extends RegexBasedTagProcessor {
 
-    private static final String TAG_REGEX = "\\Q<script\\E\\s*?src\\=\"(.*?)\"\\s*?\\>.*?\\Q</script>\\E";
+    private static final String TAG_REGEX = "\\Q<script\\E.*?src\\=\"(.*?)\".*?\\>.*?\\Q</script>\\E";
     private ResourceOptimizer resourceOptimizer = new ResourceOptimizer();
 
     @Override
@@ -32,6 +32,9 @@ public class JsTagProcessor extends RegexBasedTagProcessor {
 
     @Override
     protected String postProcessOutputFileContent(String content) {
+        if (content.isEmpty()) {
+            return content;
+        }
         return resourceOptimizer.optimizeJs(content,
                 getMojo().isMunge(),
                 getMojo().isVerbose(),

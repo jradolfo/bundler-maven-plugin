@@ -38,6 +38,9 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
 
     @Override
     protected String postProcessOutputFileContent(String content) {
+        if (content.isEmpty()) {
+            return content;
+        }
         return resourceOptimizer.optimizeCss(content);
     }
 

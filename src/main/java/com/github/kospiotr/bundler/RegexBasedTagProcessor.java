@@ -14,6 +14,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
     /**
      * Construct tag which will be outputted as a result of bundle
+     *
      * @param fileName output fileName
      * @return output tag
      */
@@ -22,6 +23,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
     /**
      * Regex that represents inner tags that will be processed and bundled.
      * It MUST return first capturing group which represents partial file path to read
+     *
      * @return inner tag regex
      */
     protected abstract String tagRegex();
@@ -48,10 +50,11 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
     /**
      * Template method allowing enhance output file content
+     *
      * @param content output file content
      * @return enhanced output file content
      */
-    protected String postProcessOutputFileContent(String content){
+    protected String postProcessOutputFileContent(String content) {
         return content;
     }
 
