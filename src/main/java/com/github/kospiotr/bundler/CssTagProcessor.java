@@ -56,14 +56,15 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
     protected String preprocessTagContent(String targetCssPath, String content, String sourceCssPath) {
         StringBuilder sb = new StringBuilder();
 
-        Pattern urlPattern = Pattern.compile("url\\([\\s'\"]*(.*?)[\\s'\"]*\\)", Pattern.DOTALL);
+        Pattern urlPattern = Pattern.compile("url\\(\\s*(['\"]?)\\s*(.*?)\\s*(\\1)\\s*\\)", Pattern.DOTALL);
         Matcher m = urlPattern.matcher(content);
         int previousIndex = 0;
         while (m.find(previousIndex)) {
-            String resourcePath = m.group(1);
+            String quote = m.group(1);
+            String resourcePath = m.group(2);
             sb.append(content.substring(previousIndex, m.start()));
             String relativizedResourcePathUrl = relativizeResourcePath(targetCssPath, sourceCssPath, resourcePath);
-            sb.append("url('").append(relativizedResourcePathUrl).append("')");
+            sb.append("url(").append(quote).append(relativizedResourcePathUrl).append(quote).append(")");
             previousIndex = m.end();
         }
         sb.append(content.substring(previousIndex, content.length()));

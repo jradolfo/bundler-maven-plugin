@@ -136,11 +136,11 @@ public class CssTagProcessorTest {
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib3.css")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), eq(
-                "h1 {background-image: url('../paper1.gif');}\n" +
-                        "h2 {background-image: url('../../paper2.gif');}\n" +
+                "h1 {background-image: url(\"../paper1.gif\");}\n" +
+                        "h2 {background-image: url(../../paper2.gif);}\n" +
                         "h3 {background-image: url('../app/paper3.gif');}\n" +
-                        "h4 {background-image: url('paper4.gif');}\n" +
-                        "h5 {background-image: url('../paper5.gif');}\n" +
+                        "h4 {background-image: url(\"paper4.gif\");}\n" +
+                        "h5 {background-image: url(../paper5.gif);}\n" +
                         "h6 {background-image: url('app/paper6.gif');}\n" +
                         "h7 {background-image: url('/paper7.gif');}\n"));
         verify(resourceOptimizer).optimizeCss(any(String.class));
