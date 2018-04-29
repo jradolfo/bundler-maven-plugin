@@ -30,22 +30,47 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
     @Override
     public String process(Tag tag) {
+        log.info("----------------------------------------");
+        log.info("Processing bundling tag: " + tag.getContent());
+
         String fileName = extractFileName(tag);
         Path parentSrcPath = getMojo().getInputFilePah().getAbsoluteFile().toPath().getParent();
         String tagContent = tag.getContent();
 
-        String content = processTags(fileName, parentSrcPath, tagContent);
-        content = postProcessOutputFileContent(content);
+        log.debug("FileName=" + fileName);
+        log.debug("ParentSrcPath=" + parentSrcPath);
+        log.debug("TagContent=\n" + tagContent.trim());
 
-        Path parentDestPath = getMojo().getOutputFilePath().getAbsoluteFile().toPath().getParent();
-        if (fileName.contains(HASH_PLACEHOLDER)) {
-            String hashValue = computeHash(content);
-            fileName = fileName.replace(HASH_PLACEHOLDER, hashValue);
+        try {
+            String content = processTags(fileName, parentSrcPath, tagContent);
+            if (tagContent.contains(".css")) {
+                log.info(content);
+            }
+            log.info("Compressing...");
+            try {
+                content = postProcessOutputFileContent(content);
+            } catch (Exception ex) {
+                log.error("Failed to compress data. Use concatenated content.", ex);
+                log.debug(content);
+            }
+
+            Path parentDestPath = getMojo().getOutputFilePath().getAbsoluteFile().toPath().getParent();
+            if (fileName.contains(HASH_PLACEHOLDER)) {
+                String hashValue = computeHash(content);
+                fileName = fileName.replace(HASH_PLACEHOLDER, hashValue);
+            }
+            Path tagDestPath = parentDestPath.resolve(fileName);
+            log.info("Writing to file: " + tagDestPath);
+            resourceAccess.write(tagDestPath, content);
+            String bundledTag = createBundledTag(fileName);
+            log.info("Done");
+            return bundledTag;
+        } catch (Exception ex) {
+            log.error(ex);
+            throw ex;
+        } finally {
+            log.info("----------------------------------------");
         }
-        Path tagDestPath = parentDestPath.resolve(fileName);
-        log.debug("Writing to file: " + tagDestPath);
-        resourceAccess.write(tagDestPath, content);
-        return createBundledTag(fileName);
     }
 
     /**
@@ -78,9 +103,12 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         while (m.find()) {
             String src = m.group(1);
             Path tagSrcPath = parentSrcPath.resolve(src);
-            String scrContent = resourceAccess.read(tagSrcPath);
-            scrContent = preprocessTagContent(fileName, scrContent, src);
-            concatContent.append(scrContent).append("\n");
+            String srcContent = resourceAccess.read(tagSrcPath);
+            srcContent = preprocessTagContent(fileName, srcContent, src);
+            if (getMojo().isVerbose()) {
+                log.info(String.format("Loading %s. Length=%d", tagSrcPath, srcContent.length()));
+            }
+            concatContent.append(srcContent).append("\n");
         }
         return concatContent.toString();
     }
@@ -98,5 +126,4 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
             throw new RuntimeException(e);
         }
     }
-
 }
