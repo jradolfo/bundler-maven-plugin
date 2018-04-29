@@ -1,14 +1,18 @@
 package com.github.kospiotr.bundler;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+
 public abstract class RegexBasedTagProcessor extends TagProcessor {
 
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String HASH_PLACEHOLDER = "#hash#";
     private ResourceAccess resourceAccess = new ResourceAccess();
 
@@ -43,12 +47,15 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
         try {
             String content = processTags(fileName, parentSrcPath, tagContent);
-            if (tagContent.contains(".css")) {
-                log.info(content);
-            }
             log.info("Compressing...");
             try {
+                int lengthBeforeCompress = content.getBytes(CHARSET).length;
                 content = postProcessOutputFileContent(content);
+                int lengthAfterCompress = content != null ? content.getBytes(CHARSET).length : 0;
+                double compressionRatio =
+                        lengthAfterCompress != 0 ? (double) lengthAfterCompress / lengthBeforeCompress : 0;
+                log.info(String.format("%d->%d CompressionRatio: %d%%", lengthBeforeCompress, lengthAfterCompress,
+                        (int) (compressionRatio * 100)));
             } catch (Exception ex) {
                 log.error("Failed to compress data. Use concatenated content.", ex);
                 log.debug(content);
@@ -85,9 +92,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
     private String extractFileName(Tag tag) {
         String[] attributes = tag.getAttributes();
-        String fileName = attributes == null || attributes.length == 0 ?
-                null :
-                attributes[0];
+        String fileName = attributes == null || attributes.length == 0 ? null : attributes[0];
 
         if (fileName == null) {
             throw new IllegalArgumentException("File Name attribute is required");
@@ -106,7 +111,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
             String srcContent = resourceAccess.read(tagSrcPath);
             srcContent = preprocessTagContent(fileName, srcContent, src);
             if (getMojo().isVerbose()) {
-                log.info(String.format("Loading %s. Length=%d", tagSrcPath, srcContent.length()));
+                log.info(String.format("Loading %s. Length=%d", tagSrcPath, srcContent.getBytes(CHARSET).length));
             }
             concatContent.append(srcContent).append("\n");
         }

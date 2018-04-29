@@ -47,6 +47,12 @@ public class ProcessMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "disableOptimizations", required = true)
     boolean disableOptimizations;
 
+    @Parameter(defaultValue = "simple", property = "cssOptimizer", required = true)
+    String cssOptimizer;
+
+    @Parameter(defaultValue = "simple", property = "jsOptimizer", required = true)
+    String jsOptimizer;
+
     public ProcessMojo() {
     }
 
@@ -92,5 +98,13 @@ public class ProcessMojo extends AbstractMojo {
 
     public boolean isDisableOptimizations() {
         return disableOptimizations;
+    }
+
+    public String getCssOptimizer() {
+        return cssOptimizer;
+    }
+
+    public String getJsOptimizer() {
+        return jsOptimizer;
     }
 }

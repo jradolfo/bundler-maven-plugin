@@ -1,15 +1,5 @@
 package com.github.kospiotr.bundler;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.io.File;
-import java.nio.file.Path;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -17,7 +7,24 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.nio.file.Path;
+
+import com.github.kospiotr.bundler.optimizer.OptimizerFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.github.kospiotr.bundler.optimizer.ResourceOptimizer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CssTagProcessorTest {
@@ -29,10 +36,18 @@ public class CssTagProcessorTest {
     ResourceAccess resourceAccess;
 
     @Mock
+    OptimizerFactory optimizerFactory;
+
+    @Mock
     ResourceOptimizer resourceOptimizer;
 
     @InjectMocks
     CssTagProcessor cssTagProcessor;
+
+    @Before
+    public void before() {
+        Mockito.when(optimizerFactory.getOptimizer(anyString())).thenReturn(resourceOptimizer);
+    }
 
     @Test
     public void shouldRejectWhenNoFileNameAttributeGiven() throws Exception {

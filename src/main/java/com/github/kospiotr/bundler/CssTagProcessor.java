@@ -4,9 +4,14 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.github.kospiotr.bundler.optimizer.OptimizerFactory;
+import com.github.kospiotr.bundler.optimizer.ResourceOptimizer;
+
 /**
  * Usage:
- * <pre>{@code
+ * 
+ * <pre>
+ * {@code
  *     <!-- build:js inline app.min.js -->
  *     <script src="my/lib/path/lib.js"></script>
  *     <script src="my/deep/development/path/script.js"></script>
@@ -22,14 +27,15 @@ import java.util.regex.Pattern;
 public class CssTagProcessor extends RegexBasedTagProcessor {
 
     private static final String TAG_REGEX = "\\Q<link\\E.*?href\\=\"(.*?)\".*?\\>";
-    private ResourceOptimizer resourceOptimizer = new ResourceOptimizer();
-    private PathNormalizator pathNormalizator = new PathNormalizator();
+
+    private final PathNormalizator pathNormalizator = new PathNormalizator();
+    // We don't add a final modifier here because we need to mock this field in unit test.
+    private OptimizerFactory optimizerFactory = OptimizerFactory.getInsatnce();
 
     @Override
     public String getType() {
         return "css";
     }
-
 
     @Override
     public String createBundledTag(String fileName) {
@@ -38,7 +44,7 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
 
     @Override
     protected String postProcessOutputFileContent(String content) {
-        return resourceOptimizer.optimizeCss(content);
+        return getResourceOptimizer().optimizeCss(content);
     }
 
     @Override
@@ -65,18 +71,22 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
     }
 
     private String relativizeResourcePath(String targetCssPath, String sourceCssPath, String resourcePath) {
-        if(isUrlAbsolute(resourcePath)){
+        if (isUrlAbsolute(resourcePath) || resourcePath.startsWith("data:")) {
             return resourcePath;
-        }else {
-            Path absoluteResourcePath = pathNormalizator.getAbsoluteResourcePath(getMojo().getInputFilePah().getAbsolutePath(),
-                    sourceCssPath, resourcePath);
-            Path absoluteTargetCssPath = pathNormalizator.getAbsoluteTargetCssPath(getMojo().getOutputFilePath().getAbsolutePath(),
-                    targetCssPath);
-            return pathNormalizator.relativize(absoluteResourcePath, absoluteTargetCssPath);
         }
+
+        Path absoluteResourcePath = pathNormalizator
+                .getAbsoluteResourcePath(getMojo().getInputFilePah().getAbsolutePath(), sourceCssPath, resourcePath);
+        Path absoluteTargetCssPath = pathNormalizator
+                .getAbsoluteTargetCssPath(getMojo().getOutputFilePath().getAbsolutePath(), targetCssPath);
+        return pathNormalizator.relativize(absoluteResourcePath, absoluteTargetCssPath);
     }
 
     private boolean isUrlAbsolute(String url) {
         return url.startsWith("/");
+    }
+
+    private ResourceOptimizer getResourceOptimizer() {
+        return optimizerFactory.getOptimizer(getMojo().getCssOptimizer());
     }
 }
