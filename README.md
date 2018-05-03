@@ -33,9 +33,9 @@ Configure plugin:
 
 ```xml
       <plugin>
-        <groupId>com.github.kospiotr</groupId>
+        <groupId>com.github.ch3cho</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
-        <version>1.12</version>
+        <version>1.12.1</version>
         <executions>
           <execution>
             <id>bundle</id>
