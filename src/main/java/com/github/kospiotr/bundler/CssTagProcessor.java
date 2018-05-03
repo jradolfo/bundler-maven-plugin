@@ -76,11 +76,17 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
             return resourcePath;
         }
 
+        String queryString = "";
+        int queryStartIndex = resourcePath.indexOf('?');
+        if (queryStartIndex != -1) {
+            queryString = resourcePath.substring(queryStartIndex);
+            resourcePath = resourcePath.substring(0, queryStartIndex);
+        }
         Path absoluteResourcePath = pathNormalizator
                 .getAbsoluteResourcePath(getMojo().getInputFilePah().getAbsolutePath(), sourceCssPath, resourcePath);
         Path absoluteTargetCssPath = pathNormalizator
                 .getAbsoluteTargetCssPath(getMojo().getOutputFilePath().getAbsolutePath(), targetCssPath);
-        return pathNormalizator.relativize(absoluteResourcePath, absoluteTargetCssPath);
+        return pathNormalizator.relativize(absoluteResourcePath, absoluteTargetCssPath) + queryString;
     }
 
     private boolean isUrlAbsolute(String url) {
