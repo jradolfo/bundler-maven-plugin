@@ -13,18 +13,19 @@ Inspired by: https://github.com/dciccale/grunt-processhtml
 
 - ```process``` - analyse input html file for special comment block, create bundle resource packages and outputs html file with bundled blocks. Bundled resources are concatenated, minimized, optimized and if requested checksum is computed and used with bundled filename. (see example below)
 
-#Configuration properties
+# Configuration properties
+
 | Property              | Description                                                  | Sample Value                                     |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------ |
 | inputFilePah          | The path of a file to be optimized                           | ${project.basedir}/src/main/resources/index.html |
 | outputFilePath        | The output path of the optimized file                        | ${project.build.outputDirectory}/index.html      |
-| hashingAlgorithm      | The algorithm used to generated hash of the file content to be used in the output file name<br />Possible values: `MD5`(default), `SHA-1`, `SHA-256`, `SHA-384`, `SHA-512` | MD5                                              |
-| verbose               | Whether to enable detailed output of the bundling process<br />Default: `false` | true                                             |
-| cssOptimizer          | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui` | simple                                           |
-| jsOptimizer           | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui` | simple                                           |
-| munge                 | Should be `true` if the compressor should shorten local variable names when possible.<br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true                                             |
-| preserveAllSemiColons | Should be `true` if the compressor should preserve                             all semicolons in the code.<br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true                                             |
-| disableOptimizations  | Should be `true` if the compressor should disable all                             micro optimizations. <br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true                                             |
+| hashingAlgorithm      | The algorithm used to generated hash of the file content to be used in the output file name<br />Possible values: `MD5`(default), `SHA-1`, `SHA-256`, `SHA-384`, `SHA-512` | MD5 |
+| verbose               | Whether to enable detailed output of the bundling process<br />Default: `false` | true |
+| cssOptimizer          | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui` | simple |
+| jsOptimizer           | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui` | simple |
+| munge                 | Should be `true` if the compressor should shorten local variable names when possible.<br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true |
+| preserveAllSemiColons | Should be `true` if the compressor should preserve all semicolons in the code.<br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true |
+| disableOptimizations  | Should be `true` if the compressor should disable all micro optimizations. <br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true |
 
 # Usage
 
@@ -34,7 +35,7 @@ Configure plugin:
       <plugin>
         <groupId>com.github.kospiotr</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.12</version>
         <executions>
           <execution>
             <id>bundle</id>
