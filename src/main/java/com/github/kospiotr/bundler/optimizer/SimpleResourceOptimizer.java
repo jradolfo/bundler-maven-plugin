@@ -23,7 +23,7 @@ public class SimpleResourceOptimizer implements ResourceOptimizer {
         try {
             ByteArrayInputStream input = new ByteArrayInputStream(content.getBytes(CHARSET));
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            PrintStream printStream = new PrintStream(output, true, StandardCharsets.UTF_8.name());
+            PrintStream printStream = new PrintStream(output, true, CHARSET.name());
             new JSMin(input, printStream).jsmin();
             printStream.flush();
             return new String(output.toByteArray(), CHARSET);
@@ -40,7 +40,7 @@ public class SimpleResourceOptimizer implements ResourceOptimizer {
         try {
             StringReader input = new StringReader(content);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
-            PrintStream printStream = new PrintStream(output, true, StandardCharsets.UTF_8.name());
+            PrintStream printStream = new PrintStream(output, true, CHARSET.name());
             CSSMin.formatFile(input, printStream);
             printStream.flush();
             return new String(output.toByteArray(), CHARSET);
