@@ -5,8 +5,12 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.calls;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -71,22 +75,26 @@ public class JsTagProcessorTest {
         assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
         verify(resourceAccess, never()).read(any(Path.class));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
-        verify(resourceOptimizer).optimizeJs(any(String.class), any(JsOptimizerParams.class));
+        verify(resourceOptimizer, never()).optimizeJs(any(String.class), any(JsOptimizerParams.class));
     }
 
     @Test
     public void shouldProcessSingleTag() throws Exception {
+        when(resourceAccess.read(any(Path.class))).thenReturn("");
+
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
         assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
-        verify(resourceOptimizer).optimizeJs(any(String.class), any(JsOptimizerParams.class));
+        verify(resourceOptimizer, times(1)).optimizeJs(any(String.class), any(JsOptimizerParams.class));
     }
 
     @Test
     public void shouldProcessMultipleInlineTags() throws Exception {
+        when(resourceAccess.read(any(Path.class))).thenReturn("");
+
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib1.js\"></script><script src=\"my/lib/path/lib2.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
@@ -94,11 +102,13 @@ public class JsTagProcessorTest {
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.js")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
-        verify(resourceOptimizer).optimizeJs(any(String.class), any(JsOptimizerParams.class));
+        verify(resourceOptimizer, times(2)).optimizeJs(any(String.class), any(JsOptimizerParams.class));
     }
 
     @Test
     public void shouldProcessMultipleMultiLineTags() throws Exception {
+        when(resourceAccess.read(any(Path.class))).thenReturn("");
+
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib1.js\"></script>\n<!-- sample comment -->\n<script src=\"my/lib/path/lib2.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
@@ -106,11 +116,24 @@ public class JsTagProcessorTest {
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.js")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
-        verify(resourceOptimizer).optimizeJs(any(String.class), any(JsOptimizerParams.class));
+        verify(resourceOptimizer, times(2)).optimizeJs(any(String.class), any(JsOptimizerParams.class));
+    }
+
+    @Test
+    public void shouldProcessWithMinifiedFiles() throws Exception {
+        when(resourceAccess.read(any(Path.class))).thenReturn("");
+
+        Tag jsTag = createJsTag("<script src=\"my/lib/path/lib1.min.js\"></script>\n<!-- sample comment -->\n<script src=\"my/lib/path/lib2.js\"></script>", "app.js");
+        String result = jsTagProcessor.process(jsTag);
+
+        assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.min.js")));
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
+        verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
+        verify(resourceOptimizer, times(1)).optimizeJs(any(String.class), any(JsOptimizerParams.class));
     }
 
     private Tag createJsTag(String content, String... attributes) {
         return new Tag(content, "js", attributes);
     }
-
 }

@@ -5,6 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +16,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String HASH_PLACEHOLDER = "#hash#";
+    private static final String MINIFIED_KEYWORD = ".min.";
     private ResourceAccess resourceAccess = new ResourceAccess();
 
     /**
@@ -46,21 +49,41 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         log.debug("TagContent=\n" + tagContent.trim());
 
         try {
-            String content = processTags(fileName, parentSrcPath, tagContent);
-            log.info("Compressing...");
-            try {
-                int lengthBeforeCompress = content.getBytes(CHARSET).length;
-                content = postProcessOutputFileContent(content);
-                int lengthAfterCompress = content != null ? content.getBytes(CHARSET).length : 0;
-                double compressionRatio =
-                        lengthAfterCompress != 0 ? (double) lengthAfterCompress / lengthBeforeCompress : 0;
-                log.info(String.format("%d->%d CompressionRatio: %d%%", lengthBeforeCompress, lengthAfterCompress,
-                        (int) (compressionRatio * 100)));
-            } catch (Exception ex) {
-                log.error("Failed to compress data. Use concatenated content.", ex);
-                log.debug(content);
-            }
+            List<TagSource> tagSources = processTags(fileName, parentSrcPath, tagContent);
+            log.info("Optimizing...");
 
+            StringBuilder outputBuilder = new StringBuilder();
+            int lengthBeforeCompress = 0, lengthAfterCompress = 0;
+            for (TagSource tagSource : tagSources) {
+                String srcContent = tagSource.getSrcContent();
+                lengthBeforeCompress += srcContent.getBytes(CHARSET).length;
+                try {
+                    // If the filename indicates that the content has been minified, we don't need to optimize it again.
+                    String processedContent;
+                    if (tagSource.getSrcPath().getFileName().toString().contains(MINIFIED_KEYWORD)) {
+                        if (getMojo().isVerbose()) {
+                            log.info("Skip optimizing " + tagSource.getSrcPath()
+                                    + " because it's already been minified.");
+                        }
+                        processedContent = srcContent;
+                    } else {
+                        if (getMojo().isVerbose()) {
+                            log.info("Optimizing " + tagSource.getSrcPath() + "...");
+                        }
+                        processedContent = postProcessOutputFileContent(srcContent);
+                    }
+                    outputBuilder.append(processedContent).append("\n");
+                    lengthAfterCompress += processedContent != null ? processedContent.getBytes(CHARSET).length : 0;
+                } catch (Exception ex) {
+                    log.error("Failed to optimize data. Use it directly. File=" + tagSource.getSrcPath(), ex);
+                }
+            }
+            double compressionRatio =
+                    lengthAfterCompress != 0 ? (double) lengthAfterCompress / lengthBeforeCompress : 0;
+            log.info(String.format("%d->%d CompressionRatio: %d%%", lengthBeforeCompress, lengthAfterCompress,
+                    (int) (compressionRatio * 100)));
+
+            String content = outputBuilder.toString();
             Path parentDestPath = getMojo().getOutputFilePath().getAbsoluteFile().toPath().getParent();
             if (fileName.contains(HASH_PLACEHOLDER)) {
                 String hashValue = computeHash(content);
@@ -101,10 +124,10 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         return fileName;
     }
 
-    private String processTags(String fileName, Path parentSrcPath, String tagContent) {
-        StringBuilder concatContent = new StringBuilder();
+    private List<TagSource> processTags(String fileName, Path parentSrcPath, String tagContent) {
         Pattern tagPattern = Pattern.compile(tagRegex(), Pattern.DOTALL);
         Matcher m = tagPattern.matcher(tagContent);
+        List<TagSource> tagSources = new ArrayList<>();
         while (m.find()) {
             String src = m.group(1);
             Path tagSrcPath = parentSrcPath.resolve(src);
@@ -113,9 +136,9 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
             if (getMojo().isVerbose()) {
                 log.info(String.format("Loading %s. Length=%d", tagSrcPath, srcContent.getBytes(CHARSET).length));
             }
-            concatContent.append(srcContent).append("\n");
+            tagSources.add(new TagSource(tagSrcPath, srcContent));
         }
-        return concatContent.toString();
+        return tagSources;
     }
 
     protected String preprocessTagContent(String fileName, String srcContent, String src) {
@@ -129,6 +152,33 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
             return new HexBinaryAdapter().marshal(digest).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class TagSource {
+
+        private Path srcPath;
+        private String srcContent;
+
+        public TagSource(Path srcPath, String srcContent) {
+            this.srcPath = srcPath;
+            this.srcContent = srcContent;
+        }
+
+        public Path getSrcPath() {
+            return srcPath;
+        }
+
+        public void setSrcPath(Path srcPath) {
+            this.srcPath = srcPath;
+        }
+
+        public String getSrcContent() {
+            return srcContent;
+        }
+
+        public void setSrcContent(String srcContent) {
+            this.srcContent = srcContent;
         }
     }
 }

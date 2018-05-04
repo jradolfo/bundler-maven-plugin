@@ -10,6 +10,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -73,7 +74,7 @@ public class CssTagProcessorTest {
         assertThat(result).isEqualTo("<link rel=\"stylesheet\" href=\"app.css\" />");
         verify(resourceAccess, never()).read(any(Path.class));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), any(String.class));
-        verify(resourceOptimizer).optimizeCss(any(String.class));
+        verify(resourceOptimizer, never()).optimizeCss(any(String.class));
     }
 
     @Test
@@ -85,7 +86,7 @@ public class CssTagProcessorTest {
         assertThat(result).isEqualTo("<link rel=\"stylesheet\" href=\"app.css\" />");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib.css")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), any(String.class));
-        verify(resourceOptimizer).optimizeCss(any(String.class));
+        verify(resourceOptimizer, times(1)).optimizeCss(any(String.class));
     }
 
     @Test
@@ -98,7 +99,7 @@ public class CssTagProcessorTest {
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.css")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), any(String.class));
-        verify(resourceOptimizer).optimizeCss(any(String.class));
+        verify(resourceOptimizer, times(2)).optimizeCss(any(String.class));
     }
 
     @Test
@@ -111,7 +112,7 @@ public class CssTagProcessorTest {
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.css")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), any(String.class));
-        verify(resourceOptimizer).optimizeCss(any(String.class));
+        verify(resourceOptimizer, times(2)).optimizeCss(any(String.class));
     }
 
     @Test
@@ -147,7 +148,20 @@ public class CssTagProcessorTest {
                         "h6 {background-image: url('app/paper6.gif');}\n" +
                         "h7 {background-image: url('/paper7.gif');}\n" +
                         "h7 {background-image: url('lib/paper8.gif?#iefix');}\n"));
-        verify(resourceOptimizer).optimizeCss(any(String.class));
+        verify(resourceOptimizer, times(4)).optimizeCss(any(String.class));
+    }
+
+    @Test
+    public void shouldProcessWithMinifiedFiles() throws Exception {
+        when(resourceAccess.read(any(Path.class))).thenReturn("");
+        Tag jsTag = createCssTag("<link href=\"my/lib/path/lib1.min.css\" /><link href=\"my/lib/path/lib2.css\" />", "app.css");
+        String result = cssTagProcessor.process(jsTag);
+
+        assertThat(result).isEqualTo("<link rel=\"stylesheet\" href=\"app.css\" />");
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.min.css")));
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
+        verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), any(String.class));
+        verify(resourceOptimizer, times(1)).optimizeCss(any(String.class));
     }
 
     private Tag createCssTag(String content, String... attributes) {
