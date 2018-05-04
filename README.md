@@ -100,3 +100,7 @@ After running plugin the result will be outputted to ```${project.build.outputDi
   Bundled files are automatically concatenated and minimized with http://yui.github.io/yuicompressor/
 
   YUI Compressor has some bugs when dealing with "data:svg+xml" values in CSS and doesn't support ES 6. You can have a try with it and see if it can work with your project.
+  
+# Note
+
+If you want to perform an in-place bundling and replace the original html file in the output directory, please set both `inputFilePah` and `outputFilePath` to the file in the output directory and change the plugin execution phase to `process-resources`.
