@@ -21,8 +21,8 @@ Inspired by: https://github.com/dciccale/grunt-processhtml
 | outputFilePath        | The output path of the optimized file                        | ${project.build.outputDirectory}/index.html      |
 | hashingAlgorithm      | The algorithm used to generated hash of the file content to be used in the output file name<br />Possible values: `MD5`(default), `SHA-1`, `SHA-256`, `SHA-384`, `SHA-512` | MD5 |
 | verbose               | Whether to enable detailed output of the bundling process<br />Default: `false` | true |
-| cssOptimizer          | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui` | simple |
-| jsOptimizer           | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui` | simple |
+| cssOptimizer          | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui`, `none`<br />When choosing `none`, no optimization shall be performed. Contents from input files will just be concatenated and saved into the output file. | simple |
+| jsOptimizer           | The name of optimizer used to process CSS files.<br />Possible values: `simple` (default), `yui`, `none`<br />When choosing `none`, no optimization shall be performed. Contents from input files will just be concatenated and saved into the output file. | simple |
 | munge                 | Should be `true` if the compressor should shorten local variable names when possible.<br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true |
 | preserveAllSemiColons | Should be `true` if the compressor should preserve all semicolons in the code.<br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true |
 | disableOptimizations  | Should be `true` if the compressor should disable all micro optimizations. <br />Only works if `jsOptimize` is set to`yui`.<br />Default: `true` | true |

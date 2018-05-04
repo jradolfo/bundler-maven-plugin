@@ -5,6 +5,7 @@ public final class Optimizers {
     private Optimizers(){
     }
 
+    public static final String NONE = "none";
     public static final String SIMPLE = "simple";
     public static final String YUI = "yui";
 }

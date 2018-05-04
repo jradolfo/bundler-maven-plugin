@@ -9,6 +9,9 @@ public class OptimizerFactory {
     }
 
     public ResourceOptimizer getOptimizer(String name) {
+        if (Optimizers.NONE.equalsIgnoreCase(name)) {
+            return new DummyResourceOptimizer();
+        }
         if (Optimizers.YUI.equalsIgnoreCase(name)) {
             return new YuiResourceOptimizer();
         }
