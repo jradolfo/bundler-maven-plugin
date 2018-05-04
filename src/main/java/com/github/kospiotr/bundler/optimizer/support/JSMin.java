@@ -46,8 +46,9 @@ public class JSMin {
 
     private int theB;
 
+    // Currently read character
     private int theX = EOF;
-
+    // Previously read character
     private int theY = EOF;
 
     public JSMin(final InputStream in, final OutputStream out) {
@@ -176,7 +177,15 @@ public class JSMin {
                         && (theA == '(' || theA == ',' || theA == '=' || theA == ':'
                         || theA == '[' || theA == '!' || theA == '&' || theA == '|'
                         || theA == '?' || theA == '+' || theA == '-' || theA == '~'
-                        || theA == '*' || theA == '/' || theA == '{' || theA == '\n')) {
+                        || theA == '*' || theA == '/' || theA == '{' || theA == '\n'
+                        || theA == ' ')) {
+                    // If a '/' comes after a space,
+                    // - it might be a regular expression, e.g. return /^\d{3}$/.exec(val);
+                    // - it might not be a regular expression. e.g. return a / b;
+                    // But if we don't treat it as a regular expression, it will cause a problem.
+                    // Just take the example above. /.exec(val); will be treated as a regular expression without a proper ending.
+                    // TODO: This may not be a good fix, we will update it when we receive any report from users.
+                    boolean isAfterSpace = theA == ' ';
                     out.write(theA);
                     if (theA == '/' || theA == '*') {
                         out.write(' ');
@@ -210,7 +219,10 @@ public class JSMin {
                             out.write(theA);
                             theA = get();
                         } else if (theA <= '\n') {
-                            throw new UnterminatedRegExpLiteralException();
+                            if (isAfterSpace) {
+                                // This may not be a regular expression. Just break;
+                            }
+                            break;
                         }
                         out.write(theA);
                     }
@@ -233,6 +245,7 @@ public class JSMin {
             get();
         }
         theA = '\n';
+        // Get next B.
         action(3);
         while (theA != EOF) {
             switch (theA) {
@@ -255,12 +268,14 @@ public class JSMin {
                             action(1);
                             break;
                         case ' ':
+                            // Leading space, drop it.
                             action(3);
                             break;
                         default:
                             if (isAlphanum(theB)) {
                                 action(1);
                             } else {
+                                // We have a separator here. A new line is not needed. Drop it.
                                 action(2);
                             }
                     }
@@ -272,6 +287,7 @@ public class JSMin {
                                 action(1);
                                 break;
                             }
+                            // Space after separator, drop it.
                             action(3);
                             break;
                         case '\n':
