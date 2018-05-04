@@ -265,7 +265,7 @@ class Selector {
             if (contents.length() == 1) {
                 throw new EmptySelectorBodyException(selector);
             }
-            contents = contents.substring(0, contents.length() - 2);
+            contents = contents.substring(0, contents.length() - 1);
 
             this.properties = new Property[0];
             this.properties = parseProperties(contents).toArray(this.properties);
