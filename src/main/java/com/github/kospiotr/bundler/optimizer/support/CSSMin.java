@@ -175,10 +175,24 @@ public class CSSMin {
             n = 0;
             j = 0;
             k = 0;
+            boolean inString = false;
+            char quoteChar = ' ';
             for (int i = 0; i < sb.length(); i++) {
                 curr = sb.charAt(i);
                 if (j < 0) {
                     throw new UnbalancedBracesException();
+                }
+                if (curr == '\'' || curr == '"') {
+                    if (!inString) {
+                        inString = true;
+                        quoteChar = curr;
+                    } else if (curr == quoteChar) {
+                        inString = false;
+                    }
+                    continue;
+                }
+                if (inString) {
+                    continue;
                 }
                 if (curr == '{') {
                     j++;
