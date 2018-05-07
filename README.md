@@ -35,7 +35,7 @@ Configure plugin:
       <plugin>
         <groupId>com.github.ch3cho</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
-        <version>1.12.1</version>
+        <version>1.12.2</version>
         <executions>
           <execution>
             <id>bundle</id>
