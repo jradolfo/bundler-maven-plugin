@@ -1,7 +1,7 @@
 # bundler-maven-plugin
 
-[![Build Status](https://travis-ci.org/jradolfo/bundler-maven-plugin.svg?branch=develop)](https://travis-ci.org/CH3CHO/bundler-maven-plugin)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.ch3cho/bundler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.ch3cho/bundler-maven-plugin)
+[![Build Status](https://travis-ci.org/jradolfo/bundler-maven-plugin.svg?branch=master)](https://travis-ci.org/jradolfo/bundler-maven-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jradolfo/bundler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.jradolfo/bundler-maven-plugin)
 
 Maven plugin for creating bundle package of js and css files in Maven project.
 
