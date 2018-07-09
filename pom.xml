@@ -1,25 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.ch3cho</groupId>
+    <groupId>com.github.jradolfo</groupId>
     <artifactId>bundler-maven-plugin</artifactId>
-    <version>1.12.2</version>
+    <version>1.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>bundler-maven-plugin</name>
     <description>Maven plugin for creating bundle package of js and css files in Maven project.</description>
 
-    <url>https://github.com/ch3cho/bundler-maven-plugin</url>
+    <url>https://github.com/jradolfo/bundler-maven-plugin</url>
     <scm>
-        <connection>scm:git:git@github.com:ch3cho/bundler-maven-plugin.git</connection>
-        <url>scm:git:git@github.com:ch3cho/bundler-maven-plugin.git</url>
-        <developerConnection>scm:git:git@github.com:ch3cho/bundler-maven-plugin.git</developerConnection>
+        <connection>scm:git:git@github.com:jradolfo/bundler-maven-plugin.git</connection>
+        <url>scm:git:git@github.com:jradolfo/bundler-maven-plugin.git</url>
+        <developerConnection>scm:git:git@github.com:jradolfo/bundler-maven-plugin.git</developerConnection>
         <tag>develop</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/ch3cho/bundler-maven-plugin/issues</url>
+        <url>https://github.com/jradolfo/bundler-maven-plugin/issues</url>
     </issueManagement>
 
     <inceptionYear>2016</inceptionYear>
@@ -39,6 +39,10 @@
         <developer>
             <name>Kent Dong (CH3CHO)</name>
             <email>ch3cho@qq.com</email>
+        </developer>
+        <developer>
+            <name>Adolfo Cavalcante</name>
+            <email>jradolfo@gmail.com</email>
         </developer>
     </developers>
 
@@ -129,8 +133,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>

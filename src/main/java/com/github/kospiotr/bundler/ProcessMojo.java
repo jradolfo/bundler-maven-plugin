@@ -24,9 +24,21 @@ public class ProcessMojo extends AbstractMojo {
      */
     @Parameter(property = "outputFile", required = true)
     File outputFilePath;
-
-
+    
     /**
+     * Location of the base of the web application. This will be used to enable the processing of JS / CSS resources that 
+     * contains EL Expressions like # {request.contextPath} or # {facescontext.externalContext.request.contextPath}. Those 
+     * expressions will be replaced by the webappBaseDir for processing purpose.
+     * If those EL Expressions are found but no webappdir is defined an exception will be thrown.
+     */
+    @Parameter(property = "inputBaseDir", required = false, defaultValue="${project.basedir}/src/main/webapp/")
+    File inputBaseDir;
+    
+    @Parameter(property = "outputBaseDir", required = false)
+    File outputBaseDir;
+
+
+	/**
      * Hashing Algrithm. Possible values for shipped providers:
      * MD5,
      * SHA-1,
@@ -61,6 +73,15 @@ public class ProcessMojo extends AbstractMojo {
         this.outputFilePath = outputFilePath;
         this.hashingAlgorithm = "MD5";
     }
+    
+    ProcessMojo(File inputFilePah, File outputFilePath, File inputBaseDir, File outputBaseDir) {
+        this.inputFilePah = inputFilePah;
+        this.outputFilePath = outputFilePath;
+        this.inputBaseDir = inputBaseDir;
+        this.outputBaseDir = outputBaseDir;
+        this.hashingAlgorithm = "MD5";
+    }
+    
 
     public void execute() {
         Tokenizer tokenizer = new Tokenizer(this);
@@ -79,8 +100,16 @@ public class ProcessMojo extends AbstractMojo {
     public File getOutputFilePath() {
         return outputFilePath;
     }
+        
+    public File getInputBaseDir() {
+		return inputBaseDir;
+	}
 
-    public String getHashingAlgorithm() {
+	public File getOutputBaseDir() {
+		return outputBaseDir;
+	}
+
+	public String getHashingAlgorithm() {
         return hashingAlgorithm;
     }
 

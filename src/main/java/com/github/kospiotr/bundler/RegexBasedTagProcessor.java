@@ -14,9 +14,12 @@ import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 public abstract class RegexBasedTagProcessor extends TagProcessor {
 
+	private static final String REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX = "#\\{request.contextPath\\}/";
+	private static final String FACES_REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX = "#\\{facesContext.externalContext.request.contextPath\\}/";
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String HASH_PLACEHOLDER = "#hash#";
     private static final String MINIFIED_KEYWORD = ".min.";
+    
     private ResourceAccess resourceAccess = new ResourceAccess();
 
     /**
@@ -78,23 +81,28 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
                     log.error("Failed to optimize data. Use it directly. File=" + tagSource.getSrcPath(), ex);
                 }
             }
-            double compressionRatio =
-                    lengthAfterCompress != 0 ? (double) lengthAfterCompress / lengthBeforeCompress : 0;
-            log.info(String.format("%d->%d CompressionRatio: %d%%", lengthBeforeCompress, lengthAfterCompress,
-                    (int) (compressionRatio * 100)));
+            double compressionRatio = lengthAfterCompress != 0 ? (double) lengthAfterCompress / lengthBeforeCompress : 0;
+            log.info(String.format("%d->%d CompressionRatio: %d%%", lengthBeforeCompress, lengthAfterCompress, (int) (compressionRatio * 100)));
 
             String content = outputBuilder.toString();
             Path parentDestPath = getMojo().getOutputFilePath().getAbsoluteFile().toPath().getParent();
+            
             if (fileName.contains(HASH_PLACEHOLDER)) {
                 String hashValue = computeHash(content);
                 fileName = fileName.replace(HASH_PLACEHOLDER, hashValue);
             }
-            Path tagDestPath = parentDestPath.resolve(fileName);
+            
+            Path tagDestPath = getAbsolutResourcePath(fileName, parentDestPath, getMojo().getOutputBaseDir().getAbsoluteFile().toPath());
+            
             log.info("Writing to file: " + tagDestPath);
+            
             resourceAccess.write(tagDestPath, content);
             String bundledTag = createBundledTag(fileName);
+            
             log.info("Done");
+            
             return bundledTag;
+            
         } catch (Exception ex) {
             log.error(ex);
             throw ex;
@@ -103,6 +111,12 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         }
     }
 
+    private Path getAbsolutResourcePath(String srcPath, Path parentSrcPath, Path alternativeParentPath) {
+    	String src = srcPath.replaceAll(REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX, "").replaceAll(FACES_REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX, "");    	
+    	return (src.equals(srcPath)) ? parentSrcPath.resolve(srcPath) : alternativeParentPath.resolve(src);
+    }
+    
+    
     /**
      * Template method allowing enhance output file content
      *
@@ -128,16 +142,20 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         Pattern tagPattern = Pattern.compile(tagRegex(), Pattern.DOTALL);
         Matcher m = tagPattern.matcher(tagContent);
         List<TagSource> tagSources = new ArrayList<>();
-        while (m.find()) {
-            String src = m.group(1);
-            Path tagSrcPath = parentSrcPath.resolve(src);
+        
+        while (m.find()) {            
+        	String src = m.group(1);            
+        	Path tagSrcPath = getAbsolutResourcePath(src, parentSrcPath, getMojo().getInputBaseDir().getAbsoluteFile().toPath());            
             String srcContent = resourceAccess.read(tagSrcPath);
             srcContent = preprocessTagContent(fileName, srcContent, src);
+            
             if (getMojo().isVerbose()) {
                 log.info(String.format("Loading %s. Length=%d", tagSrcPath, srcContent.getBytes(CHARSET).length));
             }
+        
             tagSources.add(new TagSource(tagSrcPath, srcContent));
         }
+        
         return tagSources;
     }
 
@@ -168,17 +186,10 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         public Path getSrcPath() {
             return srcPath;
         }
-
-        public void setSrcPath(Path srcPath) {
-            this.srcPath = srcPath;
-        }
-
+       
         public String getSrcContent() {
             return srcContent;
         }
 
-        public void setSrcContent(String srcContent) {
-            this.srcContent = srcContent;
-        }
     }
 }

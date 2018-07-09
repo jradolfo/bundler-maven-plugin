@@ -31,7 +31,7 @@ import com.github.kospiotr.bundler.optimizer.ResourceOptimizer;
 public class CssTagProcessorTest {
 
     @Spy
-    ProcessMojo processMojo = new ProcessMojo(new File("index-dev.html"), new File("index.html"));
+    ProcessMojo processMojo = new ProcessMojo(new File("index-dev.html"), new File("index.html"), new File("/input"), new File("/output"));
 
     @Mock
     ResourceAccess resourceAccess;
