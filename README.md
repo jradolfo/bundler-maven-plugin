@@ -1,7 +1,7 @@
 # bundler-maven-plugin
 
-[![Build Status](https://travis-ci.org/jradolfo/bundler-maven-plugin.svg?branch=develop)](https://travis-ci.org/CH3CHO/bundler-maven-plugin)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.ch3cho/bundler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.ch3cho/bundler-maven-plugin)
+[![Build Status](https://travis-ci.org/jradolfo/bundler-maven-plugin.svg?branch=master)](https://travis-ci.org/jradolfo/bundler-maven-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jradolfo/bundler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.jradolfo/bundler-maven-plugin)
 
 Maven plugin for creating bundle package of js and css files in Maven project.
 
@@ -38,9 +38,9 @@ Whenever those EL expressions are found, they're replaced by inputBaseDir for pr
 Configure plugin:
 
 ```xml
-	  <properties>
-		  <processed.files.dir>${project.build.directory}/my-processed-files</processed.files.dir>
-	  </properties>
+     <properties>
+	  <processed.files.dir>${project.build.directory}/my-processed-files</processed.files.dir>
+     </properties>
 
       <plugin>
         <groupId>com.github.ch3cho</groupId>
@@ -54,25 +54,25 @@ Configure plugin:
             </goals>
             <configuration>              
               <inputFilePah>${project.basedir}/src/main/webapp/template/basic.html</inputFilePah>
-				<outputFilePath>${processed.files.dir}/template/basic.html</outputFilePath>
-				<outputBaseDir>${processed.files.dir}/</outputBaseDir>			
+	      <outputFilePath>${processed.files.dir}/template/basic.html</outputFilePath>
+	      <outputBaseDir>${processed.files.dir}/</outputBaseDir>			
             </configuration>
           </execution>
         </executions>
       </plugin>
             
-	  <plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-war-plugin</artifactId>
-			<version>3.2.2</version>
-			<configuration>
-				<webResources>
-					<resource>							
-						<directory>${processed.files.dir}</directory>
-					</resource>
-				</webResources>
-			</configuration>
-	  </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-war-plugin</artifactId>
+	<version>3.2.2</version>
+	<configuration>
+		<webResources>
+			<resource>							
+				<directory>${processed.files.dir}</directory>
+			</resource>
+		</webResources>
+	</configuration>
+      </plugin>
 ```
 
 The processed html file will be outputed to ```${processed.files.dir}/template/basic.html``` wich later will later override the files used by war-plugin to package the application.
