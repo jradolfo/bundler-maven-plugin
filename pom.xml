@@ -3,7 +3,7 @@
 
     <groupId>com.github.jradolfo</groupId>
     <artifactId>bundler-maven-plugin</artifactId>
-    <version>1.0</version>
+    <version>1.2</version>
     <packaging>maven-plugin</packaging>
 
     <name>bundler-maven-plugin</name>

@@ -17,7 +17,7 @@ public class ProcessMojo extends AbstractMojo {
      * Input file.
      */
     @Parameter(property = "inputFile", required = true)
-    File inputFilePah;
+    File inputFilePath;
 
     /**
      * Location of the output file.
@@ -27,7 +27,7 @@ public class ProcessMojo extends AbstractMojo {
     
     /**
      * Location of the base of the web application. This will be used to enable the processing of JS / CSS resources that 
-     * contains EL Expressions like # {request.contextPath} or # {facescontext.externalContext.request.contextPath}. Those 
+     * contains EL Expressions like #{request.contextPath} or #{facescontext.externalContext.request.contextPath}. Those 
      * expressions will be replaced by the webappBaseDir for processing purpose.
      * If those EL Expressions are found but no webappdir is defined an exception will be thrown.
      */
@@ -68,14 +68,14 @@ public class ProcessMojo extends AbstractMojo {
     public ProcessMojo() {
     }
 
-    ProcessMojo(File inputFilePah, File outputFilePath) {
-        this.inputFilePah = inputFilePah;
+    ProcessMojo(File inputFilePath, File outputFilePath) {
+        this.inputFilePath = inputFilePath;
         this.outputFilePath = outputFilePath;
         this.hashingAlgorithm = "MD5";
     }
     
-    ProcessMojo(File inputFilePah, File outputFilePath, File inputBaseDir, File outputBaseDir) {
-        this.inputFilePah = inputFilePah;
+    ProcessMojo(File inputFilePath, File outputFilePath, File inputBaseDir, File outputBaseDir) {
+        this.inputFilePath = inputFilePath;
         this.outputFilePath = outputFilePath;
         this.inputBaseDir = inputBaseDir;
         this.outputBaseDir = outputBaseDir;
@@ -90,11 +90,11 @@ public class ProcessMojo extends AbstractMojo {
         tokenizer.registerProcessor(new CssTagProcessor());
 
         FileProcessor fileProcessor = new FileProcessor(tokenizer);
-        fileProcessor.process(inputFilePah.toPath(), outputFilePath.toPath());
+        fileProcessor.process(inputFilePath.toPath(), outputFilePath.toPath());
     }
 
-    public File getInputFilePah() {
-        return inputFilePah;
+    public File getInputFilePath() {
+        return inputFilePath;
     }
 
     public File getOutputFilePath() {

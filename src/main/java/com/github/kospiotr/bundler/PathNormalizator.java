@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
+@Deprecated
 public class PathNormalizator {
     /**
      * Transforming project/src/resources/static/index-dev.html<br/>

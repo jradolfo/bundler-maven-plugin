@@ -3,21 +3,24 @@ package com.github.kospiotr.bundler;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import com.github.kospiotr.bundler.util.HashGenerator;
 
 public abstract class RegexBasedTagProcessor extends TagProcessor {
 
+	/**
+	 * Placeholder used in the filename to indicate that the hash of the content should be calculated
+	 * and placed in the filename.
+	 */
+	public static final String HASH_PLACEHOLDER = "#hash#";
+	
 	private static final String REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX = "#\\{request.contextPath\\}/";
 	private static final String FACES_REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX = "#\\{facesContext.externalContext.request.contextPath\\}/";
-    private static final Charset CHARSET = StandardCharsets.UTF_8;
-    private static final String HASH_PLACEHOLDER = "#hash#";
+    private static final Charset CHARSET = StandardCharsets.UTF_8;    
     private static final String MINIFIED_KEYWORD = ".min.";
     
     private ResourceAccess resourceAccess = new ResourceAccess();
@@ -44,7 +47,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         log.info("Processing bundling tag: " + tag.getContent());
 
         String fileName = extractFileName(tag);
-        Path parentSrcPath = getMojo().getInputFilePah().getAbsoluteFile().toPath().getParent();
+        Path parentSrcPath = getMojo().getInputFilePath().getAbsoluteFile().toPath().getParent();
         String tagContent = tag.getContent();
 
         log.debug("FileName=" + fileName);
@@ -57,40 +60,38 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
 
             StringBuilder outputBuilder = new StringBuilder();
             int lengthBeforeCompress = 0, lengthAfterCompress = 0;
+            
             for (TagSource tagSource : tagSources) {
                 String srcContent = tagSource.getSrcContent();
                 lengthBeforeCompress += srcContent.getBytes(CHARSET).length;
+                
                 try {
                     // If the filename indicates that the content has been minified, we don't need to optimize it again.
                     String processedContent;
+                    
                     if (tagSource.getSrcPath().getFileName().toString().contains(MINIFIED_KEYWORD)) {
-                        if (getMojo().isVerbose()) {
-                            log.info("Skip optimizing " + tagSource.getSrcPath()
-                                    + " because it's already been minified.");
-                        }
+                    	log("Skip optimizing %s because it's already been minified.", tagSource.getSrcPath());
                         processedContent = srcContent;
                     } else {
-                        if (getMojo().isVerbose()) {
-                            log.info("Optimizing " + tagSource.getSrcPath() + "...");
-                        }
+                    	log("Optimizing %s ...", tagSource.getSrcPath());
                         processedContent = postProcessOutputFileContent(srcContent);
                     }
+                    
                     outputBuilder.append(processedContent).append("\n");
                     lengthAfterCompress += processedContent != null ? processedContent.getBytes(CHARSET).length : 0;
+                    
                 } catch (Exception ex) {
                     log.error("Failed to optimize data. Use it directly. File=" + tagSource.getSrcPath(), ex);
                 }
             }
+            
             double compressionRatio = lengthAfterCompress != 0 ? (double) lengthAfterCompress / lengthBeforeCompress : 0;
             log.info(String.format("%d->%d CompressionRatio: %d%%", lengthBeforeCompress, lengthAfterCompress, (int) (compressionRatio * 100)));
 
             String content = outputBuilder.toString();
-            Path parentDestPath = getMojo().getOutputFilePath().getAbsoluteFile().toPath().getParent();
+            Path parentDestPath = getMojo().getOutputFilePath().getAbsoluteFile().toPath().getParent();            
             
-            if (fileName.contains(HASH_PLACEHOLDER)) {
-                String hashValue = computeHash(content);
-                fileName = fileName.replace(HASH_PLACEHOLDER, hashValue);
-            }
+            fileName = verifyAndReplaceHashPlaceholder(fileName, content);
             
             Path tagDestPath = getAbsolutResourcePath(fileName, parentDestPath, getMojo().getOutputBaseDir().getAbsoluteFile().toPath());
             
@@ -111,7 +112,24 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
         }
     }
 
-    private Path getAbsolutResourcePath(String srcPath, Path parentSrcPath, Path alternativeParentPath) {
+    /**
+     * Verifies if the filename contains the #{@link RegexBasedTagProcessor#HASH_PLACEHOLDER} and if so, calculates the
+     * hash and replaces it the filename's placeholder.
+     * @param fileName
+     * @param content
+     * @return The filename with the placeholder replaced or the untouched filename if no placeholder found
+     */
+	private String verifyAndReplaceHashPlaceholder(String fileName, String content) {
+		
+		if (fileName.contains(HASH_PLACEHOLDER)) {
+		    String hashValue = HashGenerator.computeHash(content, getMojo().getHashingAlgorithm());
+		    fileName = fileName.replace(HASH_PLACEHOLDER, hashValue);
+		}
+		
+		return fileName;
+	}
+
+    protected Path getAbsolutResourcePath(String srcPath, Path parentSrcPath, Path alternativeParentPath) {
     	String src = srcPath.replaceAll(REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX, "").replaceAll(FACES_REQUEST_CONTEXTPATH_EL_EXPRESSION_REGEX, "");    	
     	return (src.equals(srcPath)) ? parentSrcPath.resolve(srcPath) : alternativeParentPath.resolve(src);
     }
@@ -149,9 +167,7 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
             String srcContent = resourceAccess.read(tagSrcPath);
             srcContent = preprocessTagContent(fileName, srcContent, src);
             
-            if (getMojo().isVerbose()) {
-                log.info(String.format("Loading %s. Length=%d", tagSrcPath, srcContent.getBytes(CHARSET).length));
-            }
+           log("Loading %s. Length=%d", tagSrcPath, srcContent.getBytes(CHARSET).length);            
         
             tagSources.add(new TagSource(tagSrcPath, srcContent));
         }
@@ -162,15 +178,11 @@ public abstract class RegexBasedTagProcessor extends TagProcessor {
     protected String preprocessTagContent(String fileName, String srcContent, String src) {
         return srcContent;
     }
-
-    private String computeHash(String content) {
-        try {
-            MessageDigest md5 = MessageDigest.getInstance(getMojo().getHashingAlgorithm());
-            byte[] digest = md5.digest(content.getBytes());
-            return new HexBinaryAdapter().marshal(digest).toLowerCase();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        
+    protected void log(String text, Object...args) {
+    	 if (getMojo().isVerbose()) {
+             log.info(String.format(text, args));
+         }
     }
 
     private static class TagSource {

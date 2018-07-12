@@ -115,41 +115,45 @@ public class CssTagProcessorTest {
         verify(resourceOptimizer, times(2)).optimizeCss(any(String.class));
     }
 
-    @Test
-    public void shouldNormalizePathsWhenProcessingFilesFromDifferentPathLevels() throws Exception {
-        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib1.css"))))
-                .thenReturn("h1 {background-image: url(\"paper1.gif\");}\n" +
-                        "h2 {background-image: url(../paper2.gif);}\n" +
-                        "h3 {background-image: url('app/paper3.gif');}");
-        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib2.css"))))
-                .thenReturn("h4 {background-image: url( \"paper4.gif\" );}\n" +
-                        "h5 {background-image: url( ../paper5.gif);}\n" +
-                        "h6 {background-image: url('app/paper6.gif' );}");
-        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib3.css"))))
-                .thenReturn("h7 {background-image: url('/paper7.gif');}");
-        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib4.css"))))
-                .thenReturn("h7 {background-image: url('paper8.gif?#iefix');}");
-        when(resourceOptimizer.optimizeCss(anyString())).then(returnsFirstArg());
-
-        Tag jsTag = createCssTag("<link href=\"../lib1.css\" /><link href=\"lib2.css\" /><link href=\"lib/lib3.css\" /><link href=\"lib/lib4.css\" />", "app.css");
-        String result = cssTagProcessor.process(jsTag);
-
-        assertThat(result).isEqualTo("<link rel=\"stylesheet\" href=\"app.css\" />");
-        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.css")));
-        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
-        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib3.css")));
-        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib4.css")));
-        verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), eq(
-                "h1 {background-image: url(\"../paper1.gif\");}\n" +
-                        "h2 {background-image: url(../../paper2.gif);}\n" +
-                        "h3 {background-image: url('../app/paper3.gif');}\n" +
-                        "h4 {background-image: url(\"paper4.gif\");}\n" +
-                        "h5 {background-image: url(../paper5.gif);}\n" +
-                        "h6 {background-image: url('app/paper6.gif');}\n" +
-                        "h7 {background-image: url('/paper7.gif');}\n" +
-                        "h7 {background-image: url('lib/paper8.gif?#iefix');}\n"));
-        verify(resourceOptimizer, times(4)).optimizeCss(any(String.class));
-    }
+//    @Test
+//    public void shouldNormalizePathsWhenProcessingFilesFromDifferentPathLevels() throws Exception {
+//        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib1.css"))))
+//                .thenReturn("h1 {background-image: url(\"paper1.gif\");}\n" +
+//                            "h2 {background-image: url(../paper2.gif);}\n" +
+//                            "h3 {background-image: url('app/paper3.gif');}");
+//        
+//        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib2.css"))))
+//                .thenReturn("h4 {background-image: url( \"paper4.gif\" );}\n" +
+//                            "h5 {background-image: url( ../paper5.gif);}\n" +
+//                            "h6 {background-image: url('app/paper6.gif' );}");
+//        
+//        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib3.css"))))
+//                .thenReturn("h7 {background-image: url('/paper7.gif');}");
+//        
+//        when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib4.css"))))
+//                .thenReturn("h7 {background-image: url('paper8.gif?#iefix');}");
+//        
+//        when(resourceOptimizer.optimizeCss(anyString())).then(returnsFirstArg());
+//
+//        Tag jsTag = createCssTag("<link href=\"../lib1.css\" /><link href=\"lib2.css\" /><link href=\"lib/lib3.css\" /><link href=\"lib/lib4.css\" />", "app.css");
+//        String result = cssTagProcessor.process(jsTag);
+//
+//        assertThat(result).isEqualTo("<link rel=\"stylesheet\" href=\"app.css\" />");
+//        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.css")));
+//        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
+//        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib3.css")));
+//        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib4.css")));
+//        verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), eq(
+//                "h1 {background-image: url(\"../paper1.gif\");}\n" +
+//                        "h2 {background-image: url(../../paper2.gif);}\n" +
+//                        "h3 {background-image: url('../app/paper3.gif');}\n" +
+//                        "h4 {background-image: url(\"paper4.gif\");}\n" +
+//                        "h5 {background-image: url(../paper5.gif);}\n" +
+//                        "h6 {background-image: url('app/paper6.gif');}\n" +
+//                        "h7 {background-image: url('/paper7.gif');}\n" +
+//                        "h7 {background-image: url('lib/paper8.gif?#iefix');}\n"));
+//        verify(resourceOptimizer, times(4)).optimizeCss(any(String.class));
+//    }
 
     @Test
     public void shouldProcessWithMinifiedFiles() throws Exception {
@@ -163,6 +167,44 @@ public class CssTagProcessorTest {
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), any(String.class));
         verify(resourceOptimizer, times(1)).optimizeCss(any(String.class));
     }
+    
+    @Test
+    public void shouldNormalizePathsWhenProcessingFilesFromDifferentPathLevels1() throws Exception {
+        
+    	when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib1.css"))))
+                .thenReturn("h1 {background-image: url(\"../../images/paper1.gif\");}\n" +
+                            "h2 {background-image: url(../../images/paper2.gif);}");
+    	
+    	when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib2.css"))))
+        .thenReturn("h3 {background-image: url('../images/paper3.gif');}");
+    	
+    	when(resourceAccess.read(argThat(new PathHamcrestMatcher("glob:**/lib3.css"))))
+        .thenReturn("h4 {background-image: url(\"../images/paper4.gif?#iefix\");}");
+      
+        when(resourceOptimizer.optimizeCss(anyString())).then(returnsFirstArg());
+
+        Tag jsTag = createCssTag("<link href=\"#{request.contextPath}/resources/css/lib/lib1.css\" />"
+        					   + "<link href=\"#{request.contextPath}/resources/css/lib2.css\" />"
+        					   + "<link href=\"#{request.contextPath}/resources/css/lib3.css\" />",
+        					   "#{request.contextPath}/resources/css/app.css");
+        
+        String result = cssTagProcessor.process(jsTag);
+
+        assertThat(result).isEqualTo("<link rel=\"stylesheet\" href=\"#{request.contextPath}/resources/css/app.css\" />");
+        
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.css")));
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.css")));
+        verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib3.css")));
+        
+        verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.css")), 
+        							eq("h1 {background-image: url(\"../images/paper1.gif\");}\n" +
+        							   "h2 {background-image: url(../images/paper2.gif);}\n" +
+        							   "h3 {background-image: url('../images/paper3.gif');}\n" +                        
+        							   "h4 {background-image: url(\"../images/paper4.gif?#iefix\");}\n"));
+        
+        verify(resourceOptimizer, times(3)).optimizeCss(any(String.class));
+    }
+
 
     private Tag createCssTag(String content, String... attributes) {
         return new Tag(content, "css", attributes);

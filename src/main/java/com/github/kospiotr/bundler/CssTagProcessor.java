@@ -29,6 +29,7 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
     private static final String TAG_REGEX = "\\Q<link\\E.*?href\\=\"(.*?)\".*?\\>";
 
     private final PathNormalizator pathNormalizator = new PathNormalizator();
+    
     // We don't add a final modifier here because we need to mock this field in unit test.
     private OptimizerFactory optimizerFactory = OptimizerFactory.getInsatnce();
 
@@ -82,11 +83,16 @@ public class CssTagProcessor extends RegexBasedTagProcessor {
             queryString = resourcePath.substring(queryStartIndex);
             resourcePath = resourcePath.substring(0, queryStartIndex);
         }
-        Path absoluteResourcePath = pathNormalizator
-                .getAbsoluteResourcePath(getMojo().getInputFilePah().getAbsolutePath(), sourceCssPath, resourcePath);
-        Path absoluteTargetCssPath = pathNormalizator
-                .getAbsoluteTargetCssPath(getMojo().getOutputFilePath().getAbsolutePath(), targetCssPath);
-        return pathNormalizator.relativize(absoluteResourcePath, absoluteTargetCssPath) + queryString;
+        
+        Path absoluteSourceCssPath = getAbsolutResourcePath(sourceCssPath, getMojo().getInputBaseDir().getAbsoluteFile().toPath(), getMojo().getInputBaseDir().getAbsoluteFile().toPath());        
+        Path absoluteSourceResourcePath = absoluteSourceCssPath.resolve(resourcePath).normalize();        
+        Path relativeSourceResourcePath = getMojo().getInputBaseDir().getAbsoluteFile().toPath().relativize(absoluteSourceResourcePath);
+        
+        Path absoluteTargetCssPath = getAbsolutResourcePath(targetCssPath, getMojo().getOutputBaseDir().getAbsoluteFile().toPath(), getMojo().getOutputBaseDir().getAbsoluteFile().toPath()).normalize();
+        Path absoluteTargetResourcePath = getMojo().getOutputBaseDir().getAbsoluteFile().toPath().resolve(relativeSourceResourcePath);                               
+        Path relativeTargetResourcePath = absoluteTargetCssPath.relativize(absoluteTargetResourcePath);
+        
+        return relativeTargetResourcePath.normalize() + queryString; 
     }
 
     private boolean isUrlAbsolute(String url) {
