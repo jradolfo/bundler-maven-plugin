@@ -70,7 +70,7 @@ public class JsTagProcessorTest {
         Tag jsTag = createJsTag("", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
-        assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
+        assertThat(result).isEqualTo("<script type=\"text/javascript\" src=\"app.js\"></script>");
         verify(resourceAccess, never()).read(any(Path.class));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
         verify(resourceOptimizer, never()).optimizeJs(any(String.class), any(JsOptimizerParams.class));
@@ -83,7 +83,7 @@ public class JsTagProcessorTest {
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
-        assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
+        assertThat(result).isEqualTo("<script type=\"text/javascript\" src=\"app.js\"></script>");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
         verify(resourceOptimizer, times(1)).optimizeJs(any(String.class), any(JsOptimizerParams.class));
@@ -96,7 +96,7 @@ public class JsTagProcessorTest {
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib1.js\"></script><script src=\"my/lib/path/lib2.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
-        assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
+        assertThat(result).isEqualTo("<script type=\"text/javascript\" src=\"app.js\"></script>");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.js")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
@@ -110,7 +110,7 @@ public class JsTagProcessorTest {
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib1.js\"></script>\n<!-- sample comment -->\n<script src=\"my/lib/path/lib2.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
-        assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
+        assertThat(result).isEqualTo("<script type=\"text/javascript\" src=\"app.js\"></script>");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.js")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
@@ -124,7 +124,7 @@ public class JsTagProcessorTest {
         Tag jsTag = createJsTag("<script src=\"my/lib/path/lib1.min.js\"></script>\n<!-- sample comment -->\n<script src=\"my/lib/path/lib2.js\"></script>", "app.js");
         String result = jsTagProcessor.process(jsTag);
 
-        assertThat(result).isEqualTo("<script src=\"app.js\"></script>");
+        assertThat(result).isEqualTo("<script type=\"text/javascript\" src=\"app.js\"></script>");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.min.js")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));
@@ -139,7 +139,7 @@ public class JsTagProcessorTest {
         Tag jsTag = createJsTag("<script src=\"#{request.contextPath}/my/lib/path/lib1.js\"></script><script src=\"#{facesContext.externalContext.request.contextPath}/my/lib/path/lib2.js\"></script>", "#{request.contextPath}/js/app.js");
         String result = jsTagProcessor.process(jsTag);
 
-        assertThat(result).isEqualTo("<script src=\"#{request.contextPath}/js/app.js\"></script>");
+        assertThat(result).isEqualTo("<script type=\"text/javascript\" src=\"#{request.contextPath}/js/app.js\"></script>");
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib1.js")));
         verify(resourceAccess).read(argThat(new PathHamcrestMatcher("glob:**/lib2.js")));
         verify(resourceAccess).write(argThat(new PathHamcrestMatcher("glob:**/app.js")), any(String.class));

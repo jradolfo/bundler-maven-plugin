@@ -35,7 +35,7 @@ public class JsTagProcessor extends RegexBasedTagProcessor {
 
     @Override
     public String createBundledTag(String fileName) {
-        return "<script src=\"" + fileName + "\"></script>";
+        return "<script type=\"text/javascript\" src=\"" + fileName + "\"></script>";
     }
 
     @Override
